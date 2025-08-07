@@ -2,25 +2,36 @@ import { StatusBar } from "expo-status-bar";
 import { useState, useEffect } from "react";
 import {
   StyleSheet,
-  Platform,
   Text,
   View,
   Image,
   TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Keyboard
 } from "react-native";
 
 import logo from "../assets/logo.png";
 
 import api from "../services/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../services/routes";
 
-export default function Login() {
+type LoginScreenProps = {
+  navigation: NativeStackNavigationProp<RootStackParamList, 'Login'>
+}
+
+export function Login({navigation}: LoginScreenProps) {
     const [email, setEmail] = useState("");
     const [techs, setTechs] = useState("");
   
-    useEffect(() => {}, []);
+    useEffect(() => {
+      AsyncStorage.getItem('user').then(user => {
+        if (user) navigation.navigate('List')
+      })
+    }, []);
   
     async function handleSubmit() {
       try {
@@ -30,48 +41,51 @@ export default function Login() {
         await AsyncStorage.setItem("user", _id);
         await AsyncStorage.setItem("techs", techs);
   
-        console.log("Login feito com sucesso!");
+        navigation.navigate('List')
       } catch (err) {
         console.error("Erro ao fazer login:", err);
       }
     }
   
     return(
+
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <KeyboardAvoidingView behavior="padding" style={styles.container}>
-        <Image source={logo}></Image>
-        <View style={styles.form}>
-          <Text style={styles.label}>SEU E-MAIL *</Text>
-  
-          <TextInput
-            style={styles.input}
-            placeholder="Seu e-mail..."
-            placeholderTextColor="#0007"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-            value={email}
-            onChangeText={setEmail}
-          />
-  
-          <Text style={styles.label}>TECNOLOGIAS</Text>
-  
-          <TextInput
-            style={styles.input}
-            placeholder="Tecnologias de interesse"
-            placeholderTextColor="#0007"
-            value={techs}
-            onChangeText={setTechs}
-          />
-  
-          <TouchableOpacity
-            style={styles.button}
-            // onPress={() => {}}
-            onPress={handleSubmit}
-          >
-            <Text style={styles.buttonText}>Encontrar Spots</Text>
-          </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
+          <Image source={logo}></Image>
+          <View style={styles.form}>
+            <Text style={styles.label}>SEU E-MAIL *</Text>
+    
+            <TextInput
+              style={styles.input}
+              placeholder="Seu e-mail..."
+              placeholderTextColor="#0007"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              value={email}
+              onChangeText={setEmail}
+            />
+    
+            <Text style={styles.label}>TECNOLOGIAS</Text>
+    
+            <TextInput
+              style={styles.input}
+              placeholder="Tecnologias de interesse"
+              placeholderTextColor="#0007"
+              value={techs}
+              onChangeText={setTechs}
+            />
+    
+            <TouchableOpacity
+              style={styles.button}
+              // onPress={() => {}}
+              onPress={handleSubmit}
+            >
+              <Text style={styles.buttonText}>Encontrar Spots</Text>
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
     );
 }
 
@@ -84,7 +98,7 @@ const styles = StyleSheet.create({
     },
     form: {
       alignSelf: "stretch",
-      paddingHorizontal: 30,
+      paddingHorizontal: 45,
       marginTop: 30,
     },
     label: {
